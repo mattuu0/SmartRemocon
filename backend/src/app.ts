@@ -20,6 +20,9 @@ import express from 'express';
 import http from 'http';
 import { Any } from 'typeorm';
 
+// サービスをインポートする
+import { EnvLogService } from './service';
+
 // expressアプリケーションのインスタンスを作成
 const app = express();
 
@@ -32,8 +35,8 @@ app.use(express.json());
 // サーバーがリッスンするポート番号を指定
 const port = 8000;
 
-// 一時的にデータを保存する json
-const datas: any = [];
+// サービスを初期化する
+const env_log_service = new 
 
 // api グループを作成する
 const apiRouter = express.Router();
