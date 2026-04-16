@@ -2,7 +2,7 @@ import {EnvLogService,EnvLog} from "../service";
 
 class EnvLogController {
     // コンストラクタ
-    private envLogService: EnvLogService = new EnvLogService();
+    private envLogService: EnvLogService;
 
     constructor(envLogService: EnvLogService) {
         this.envLogService = envLogService;
@@ -37,12 +37,12 @@ class EnvLogController {
     }
 
     // 全てのログを返す
-    public GetEnvLogs(req: any, res: any) {
-        console.log("GetEnvLogs");
-        console.log(this);
-
+    public async GetEnvLogs(req: any, res: any) {
+        // model からデータを取得
+        const result = await this.envLogService.GetEnvLogs();
+        
         // json を返す
-        res.json(this.envLogService.GetEnvLogs());
+        res.json(result);
     }
 }
 

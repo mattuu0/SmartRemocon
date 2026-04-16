@@ -35,6 +35,7 @@ services:
     command: >
       sh -c "
         npm install &&
+        npx prisma generate &&
         npm run dev
       "
 

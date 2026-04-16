@@ -23,6 +23,8 @@ import { Any } from 'typeorm';
 // サービスをインポートする
 import { EnvLogService } from './service';
 import EnvLogController from './controller/env-log';
+import { prisma } from './models/prisma';
+import { EnvLoggerModel } from './models';
 
 // expressアプリケーションのインスタンスを作成
 const app = express();
@@ -36,8 +38,11 @@ app.use(express.json());
 // サーバーがリッスンするポート番号を指定
 const port = 8000;
 
+// model を初期化する
+const env_log_model = new EnvLoggerModel(prisma);
+
 // サービスを初期化する
-const env_log_service = new EnvLogService();
+const env_log_service = new EnvLogService(env_log_model);
 
 // コントローラーを初期化する
 const env_log_controller = new EnvLogController(env_log_service);
@@ -58,5 +63,3 @@ app.use('/api', apiRouter);
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-

@@ -145,3 +145,5 @@ dist
 
 .DS_Store
 /src/generated/prisma
+
+/generated/prisma
