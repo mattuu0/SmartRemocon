@@ -18,6 +18,11 @@ import express from 'express';
 
 // httpモジュールをインポート（Node.jsの標準モジュール、HTTPサーバーを作成するために使用）
 import http from 'http';
+import { Any } from 'typeorm';
+
+// サービスをインポートする
+import { EnvLogService } from './service';
+import EnvLogController from './controller/env-log';
 
 // expressアプリケーションのインスタンスを作成
 const app = express();
@@ -31,7 +36,27 @@ app.use(express.json());
 // サーバーがリッスンするポート番号を指定
 const port = 8000;
 
+// サービスを初期化する
+const env_log_service = new EnvLogService();
+
+// コントローラーを初期化する
+const env_log_controller = new EnvLogController(env_log_service);
+
+// api グループを作成する
+const apiRouter = express.Router();
+
+// 音頭を更新するエンドポイントを実装する
+apiRouter.post("/env-logs",(req,res) => env_log_controller.PostEnvLog(req,res));
+
+// 音頭を返すエンドポイントを実装する
+apiRouter.get("/env-logs",(req,res) => env_log_controller.GetEnvLogs(req,res));
+
+// api ルーターを適用する
+app.use('/api', apiRouter);
+
 // 指定したポートでHTTPサーバーを起動し、起動成功時にメッセージを出力
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+

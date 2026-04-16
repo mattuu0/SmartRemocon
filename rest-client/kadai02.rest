@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/env-logs HTTP/1.1
+Content-Type: application/json
+
+{
+    "temperatureSht" : "20",
+    "humidity" : "100",
+    "pressure" : "100",
+    "createdAt" : "July 20, 69 00:20:18"
+}
