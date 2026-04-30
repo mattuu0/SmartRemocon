@@ -1,23 +1,22 @@
-import { PrismaClient } from "../../generated/prisma/client";
+import { PrismaClient } from "../../generated/prisma"; // 出力先に合わせる
 import { EnvLog } from "../service";
 
 export class EnvLoggerModel {
-    // prisma ORM
     private prisma: PrismaClient;
 
-    // prisma ORM
     constructor(prism: PrismaClient) {
         this.prisma = prism;
     }
 
     public async postEnvLog(envLog: EnvLog) {
-        // 追加 のログをプッシュする関数
+        // スキーマ側を deviceId / temperatureSht 等に合わせたため、
+        // 型定義の値をそのまま流し込めます。
         const environmentLog = await this.prisma.environmentLog.create({
             data: {
-                device_id: 1,
-                temperature_sht: envLog.temperatureSht,
+                deviceId: 1, // device_id から変更
+                temperatureSht: envLog.temperatureSht,
                 humidity: envLog.humidity,
-                temperature_qmp: 10,
+                temperatureQmp: envLog.temperatureSht, // 10 などの固定値も同様
                 pressure: envLog.pressure,
             },
         });
@@ -26,18 +25,25 @@ export class EnvLoggerModel {
         return environmentLog;
     }
 
-    public async getEnvLogs() {
+    public async getEnvLogs(): Promise<EnvLog[]> {
         // model からデータを取得
-        const environmentLogs = await this.prisma.environmentLog.findMany();
+        // include: { device: true } を使うと Device 型定義にあるリレーションも取得可能です
+        const environmentLogs = await this.prisma.environmentLog.findMany({
+            include: {
+                device: true,
+            }
+        });
 
-        const envLogs: EnvLog[] = environmentLogs.map((log: any) => ({
-            temperatureSht: log.temperature_sht,
+        // Prismaの型とEnvLog型が一致しているため、マッピングが簡潔になります
+        return environmentLogs.map((log) => ({
+            id: log.id,
+            device: log.device,
+            temperatureSht: log.temperatureSht,
             humidity: log.humidity,
+            temperatureQmp: log.temperatureQmp,
             pressure: log.pressure,
-            createdAt: new Date(log.created_at), // Dateオブジェクトとして渡す
+            createdAt: log.createdAt,
+            updatedAt: log.updatedAt,
         }));
-
-        return envLogs;
     }
 }
-

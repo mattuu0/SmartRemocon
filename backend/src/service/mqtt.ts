@@ -1,6 +1,7 @@
 import * as mqtt from "mqtt";
-import { EnvLogService,EnvLog } from "./env-log";
+import { EnvLogService } from "./env-log";
 
+import { type EnvLog, type Device, type IRSensorValue } from "./types";
 
 // 受信データの型定義
 interface SensorData {

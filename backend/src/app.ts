@@ -19,6 +19,10 @@ import express from 'express';
 // httpモジュールをインポート（Node.jsの標準モジュール、HTTPサーバーを作成するために使用）
 import http from 'http';
 
+// socket.ioをインポート
+import { Server } from "socket.io";
+
+
 // サービスをインポートする
 import { EnvLogService } from './service';
 import EnvLogController from './controller/env-log';
@@ -40,8 +44,15 @@ const port = 8000;
 // model を初期化する
 const env_log_model = new EnvLoggerModel(prisma);
 
+// socket.io のサーバーを初期化する
+const io = new Server(server);
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+});
+
 // サービスを初期化する
-const env_log_service = new EnvLogService(env_log_model);
+const env_log_service = new EnvLogService(env_log_model, io);
 
 // コントローラーを初期化する
 const env_log_controller = new EnvLogController(env_log_service);

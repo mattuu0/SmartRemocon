@@ -1,64 +1,61 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
+// generator と datasource の設定
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
+  // url      = env("DATABASE_URL")
 }
 
 /// デバイス情報管理テーブル
 model Device {
-  id               Int              @id @default(autoincrement())
-  mac_address      String           @unique
-  ip_address       String
-  name             String
-  location         String?          @db.Text
-  collect_metrics  Boolean          @default(false)
-  registered_at    DateTime
-  created_at       DateTime         @default(now())
-  updated_at       DateTime         @updatedAt
+  id             Int      @id @default(autoincrement())
+  macAddress     String   @unique @map("mac_address")
+  ipAddress      String   @map("ip_address")
+  name           String
+  location       String   @default("") @db.Text
+  collectMetrics Boolean  @default(false) @map("collect_metrics")
+  registeredAt   DateTime @map("registered_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  // リレーション定義
-  environment_logs EnvironmentLog[]
-  ir_sensor_values IrSensorValue[]
+  // 型定義の名称に合わせたリレーションフィールド
+  envLog        EnvironmentLog[]
+  IRSensorValue IrSensorValue[]
 
   @@map("devices")
 }
 
 /// 環境ログ（センサーデータ）管理テーブル
 model EnvironmentLog {
-  id              Int      @id @default(autoincrement())
-  device_id       Int
-  temperature_sht Float
-  humidity        Float
-  temperature_qmp Float
-  pressure        Float
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  deviceId       Int      @map("device_id")
+  temperatureSht Float    @map("temperature_sht")
+  humidity       Float
+  temperatureQmp Float    @map("temperature_qmp")
+  pressure       Float
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Deviceモデルへの参照
-  device          Device   @relation(fields: [device_id], references: [id])
+  device Device @relation(fields: [deviceId], references: [id])
 
   @@map("environment_logs")
 }
 
 /// 赤外線センサー値管理テーブル
 model IrSensorValue {
-  id         Int      @id @default(autoincrement())
-  device_id  Int
-  name       String
-  data       String   @db.Text
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  deviceId  Int      @map("device_id")
+  name      String
+  data      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Deviceモデルへの参照
-  device     Device   @relation(fields: [device_id], references: [id])
+  device Device @relation(fields: [deviceId], references: [id])
 
   @@map("ir_sensor_values")
 }
