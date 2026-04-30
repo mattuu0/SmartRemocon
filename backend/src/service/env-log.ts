@@ -1,12 +1,21 @@
+import { EnvLoggerModel } from "../models";
+
 // 環境情報
 export type EnvLog = {
     temperatureSht: number;
     humidity: number;
     pressure: number;
-    createdAt: number;
+    createdAt: Date; // number → Date に変更
 };
 
 export class EnvLogService {
+    private EnvLoggerModel: EnvLoggerModel;
+
+    // コンストラクタ
+    constructor(envLoggerModel: EnvLoggerModel) {
+        this.EnvLoggerModel = envLoggerModel;
+    }
+
     // 一時的にデータを保存する json
     public datas: EnvLog[] = [];
 
@@ -16,11 +25,25 @@ export class EnvLogService {
         data.createdAt = new Date();
 
         // json に追加  
-        this.datas.push(data);
+        this.EnvLoggerModel.postEnvLog(data);
     }
 
     // 全てのログを返す
-    public GetEnvLogs(): EnvLog[] {
-        return this.datas;
+    public async GetEnvLogs(): Promise<EnvLog[]> {
+        // model からデータを取得
+        const result = await this.EnvLoggerModel.getEnvLogs();
+
+        const datas = result.map((element: any) => {
+            return {
+                temperatureSht: element.temperatureSht,
+                humidity: element.humidity,
+                pressure: element.pressure,
+                createdAt: element.createdAt
+            }
+        })
+
+        console.log(datas);
+
+        return datas;
     }
 }
