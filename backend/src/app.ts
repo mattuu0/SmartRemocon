@@ -60,11 +60,10 @@ const env_log_controller = new EnvLogController(env_log_service);
 // api グループを作成する
 const apiRouter = express.Router();
 
-// 音頭を更新するエンドポイントを実装する
-apiRouter.post("/env-logs",(req,res) => env_log_controller.PostEnvLog(req,res));
-
 // 音頭を返すエンドポイントを実装する
 apiRouter.get("/env-logs",(req,res) => env_log_controller.GetEnvLogs(req,res));
+
+// デバイス
 
 // api ルーターを適用する
 app.use('/api', apiRouter);

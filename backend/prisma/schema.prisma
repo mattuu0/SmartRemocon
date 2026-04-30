@@ -11,11 +11,10 @@ datasource db {
 
 /// デバイス情報管理テーブル
 model Device {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   macAddress     String   @unique @map("mac_address")
   ipAddress      String   @map("ip_address")
   name           String
-  location       String   @default("") @db.Text
   collectMetrics Boolean  @default(false) @map("collect_metrics")
   registeredAt   DateTime @map("registered_at")
   createdAt      DateTime @default(now()) @map("created_at")
@@ -31,10 +30,9 @@ model Device {
 /// 環境ログ（センサーデータ）管理テーブル
 model EnvironmentLog {
   id             Int      @id @default(autoincrement())
-  deviceId       Int      @map("device_id")
+  deviceId       String   @map("device_id")
   temperatureSht Float    @map("temperature_sht")
   humidity       Float
-  temperatureQmp Float    @map("temperature_qmp")
   pressure       Float
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -48,7 +46,7 @@ model EnvironmentLog {
 /// 赤外線センサー値管理テーブル
 model IrSensorValue {
   id        Int      @id @default(autoincrement())
-  deviceId  Int      @map("device_id")
+  deviceId  String   @map("device_id")
   name      String
   data      String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")

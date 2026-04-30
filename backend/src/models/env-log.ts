@@ -1,5 +1,6 @@
-import { PrismaClient } from "../../generated/prisma"; // 出力先に合わせる
-import { EnvLog } from "../service";
+import { PrismaClient } from "../../generated/prisma/client"; // 出力先に合わせる
+import { DeviceEnvLog } from "../service/types";
+import { DeviceEnvLogRecord } from "./type";
 
 export class EnvLoggerModel {
     private prisma: PrismaClient;
@@ -8,42 +9,57 @@ export class EnvLoggerModel {
         this.prisma = prism;
     }
 
-    public async postEnvLog(envLog: EnvLog) {
-        // スキーマ側を deviceId / temperatureSht 等に合わせたため、
-        // 型定義の値をそのまま流し込めます。
-        const environmentLog = await this.prisma.environmentLog.create({
+    async RegsiterDevice(deviceId: string, macAddress: string, ipAddress: string) {
+        await this.prisma.device.create({
             data: {
-                deviceId: 1, // device_id から変更
+                id: deviceId,
+                macAddress: macAddress,
+                ipAddress: ipAddress,
+                name: "unknown",
+                collectMetrics: true,
+                registeredAt: new Date(),
+            },
+        });
+    }
+
+    public async postEnvLog(envLog: DeviceEnvLogRecord): Promise<void> {
+        // 先にデバイスを登録してみる
+        try {
+            await this.RegsiterDevice(envLog.deviceId, "unknown", "unknown");
+        } catch (error) {
+            // デバイスの登録に失敗しても、ログの保存は続行する
+            // console.warn(`Device registration failed for deviceId: ${envLog.deviceId}. Error: ${error}`);
+        }
+
+        await this.prisma.environmentLog.create({
+            data: {
+                deviceId: envLog.deviceId,
                 temperatureSht: envLog.temperatureSht,
                 humidity: envLog.humidity,
-                temperatureQmp: envLog.temperatureSht, // 10 などの固定値も同様
                 pressure: envLog.pressure,
+                createdAt: envLog.createdAt,
+            },
+        });
+    }
+
+    public async getEnvLogs(): Promise<DeviceEnvLogRecord[]> {
+        const logs = await this.prisma.environmentLog.findMany({
+            orderBy: {
+                createdAt: 'desc',
             },
         });
 
-        console.log('作成されたEnvironmentLog:', environmentLog);
-        return environmentLog;
-    }
-
-    public async getEnvLogs(): Promise<EnvLog[]> {
-        // model からデータを取得
-        // include: { device: true } を使うと Device 型定義にあるリレーションも取得可能です
-        const environmentLogs = await this.prisma.environmentLog.findMany({
-            include: {
-                device: true,
-            }
-        });
-
-        // Prismaの型とEnvLog型が一致しているため、マッピングが簡潔になります
-        return environmentLogs.map((log) => ({
-            id: log.id,
-            device: log.device,
+        // 返せる形に変換
+        const deviceLogs: DeviceEnvLogRecord[] = logs.map(log => ({
+            deviceId: log.deviceId,
+            ip_address: "unknown", // デバイス情報がないため、固定値を使用
+            mac_address: log.deviceId, // デバイス情報がないため、固定値を使用
             temperatureSht: log.temperatureSht,
             humidity: log.humidity,
-            temperatureQmp: log.temperatureQmp,
             pressure: log.pressure,
             createdAt: log.createdAt,
-            updatedAt: log.updatedAt,
         }));
+
+        return deviceLogs;
     }
 }

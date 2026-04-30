@@ -1,8 +1,10 @@
 // 環境情報
-export type EnvLog = {
+export type DeviceEnvLog = {
     temperatureSht: number;
     humidity: number;
     pressure: number;
+    ip_address: string;
+    mac_address: string;
     createdAt: Date; // number → Date に変更
 };
 
@@ -25,7 +27,7 @@ export type Device = {
     location: string;
     collectMetrics: boolean;
     registeredAt: Date;
-    envLog: EnvLog;
+    envLog: DeviceEnvLog;
     IRSensorValue: IRSensorValue;
     createdAt: Date;
     updatedAt: Date;

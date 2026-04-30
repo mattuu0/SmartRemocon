@@ -4,7 +4,6 @@ CREATE TABLE `devices` (
     `mac_address` VARCHAR(191) NOT NULL,
     `ip_address` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `location` TEXT NULL,
     `collect_metrics` BOOLEAN NOT NULL DEFAULT false,
     `registered_at` DATETIME(3) NOT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

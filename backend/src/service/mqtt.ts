@@ -1,10 +1,12 @@
 import * as mqtt from "mqtt";
 import { EnvLogService } from "./env-log";
+import { DeviceEnvLog } from "./types";
 
-import { type EnvLog, type Device, type IRSensorValue } from "./types";
 
 // 受信データの型定義
 interface SensorData {
+    ip_address: string;
+    mac_address: string;
     temperature: number;
     humidity: number;
     pressure: number;
@@ -55,7 +57,9 @@ export function MqttInit(envlogService: EnvLogService) {
             console.log(`  Humidity    : ${data.humidity} %`);
             console.log(`  Pressure    : ${data.pressure} hPa`);
 
-            const postData = {
+            const postData: DeviceEnvLog = {
+                ip_address: data.ip_address || "unknown",
+                mac_address: data.mac_address || "unknown",
                 temperatureSht: data.temperature,
                 humidity: data.humidity,
                 pressure: data.pressure,

@@ -1,7 +1,8 @@
 import { Server } from "socket.io";
 import { EnvLoggerModel } from "../models";
 
-import { type EnvLog, type Device, type IRSensorValue, type FrontendEnvLog } from "./types";
+import { type DeviceEnvLog, type Device, type IRSensorValue, type FrontendEnvLog } from "./types";
+import { DeviceEnvLogRecord } from "../models/type";
 
 export class EnvLogService {
     private EnvLoggerModel: EnvLoggerModel;
@@ -14,12 +15,26 @@ export class EnvLogService {
     }
 
     // 追加のログをプッシュする関数
-    public PostEnvLog(data: EnvLog) {
+    public PostEnvLog(data: DeviceEnvLog) {
         // 日時取得
         data.createdAt = new Date();
 
+        // macアドレスをdeviceIdとして使用
+        const deviceId = data.mac_address;
+
+        // 追加する ログのレコードを作成
+        const envLogRecord: DeviceEnvLogRecord = {
+            deviceId: deviceId,
+            ip_address: data.ip_address,
+            mac_address: data.mac_address,
+            temperatureSht: data.temperatureSht,
+            humidity: data.humidity,
+            pressure: data.pressure,
+            createdAt: data.createdAt,
+        };
+
         // json に追加  
-        this.EnvLoggerModel.postEnvLog(data);
+        this.EnvLoggerModel.postEnvLog(envLogRecord);
 
         const emitData: FrontendEnvLog = {
             id:0,
@@ -56,21 +71,20 @@ export class EnvLogService {
     }
 
     // 全てのログを返す
-    public async GetEnvLogs(): Promise<EnvLog[]> {
-        // model からデータを取得
-        const result = await this.EnvLoggerModel.getEnvLogs();
+    public async GetEnvLogs(): Promise<DeviceEnvLog[]> {
+        // 適用なデータを返す
+        const logs = await this.EnvLoggerModel.getEnvLogs();
 
-        const datas = result.map((element: any) => {
-            return {
-                temperatureSht: element.temperatureSht,
-                humidity: element.humidity,
-                pressure: element.pressure,
-                createdAt: element.createdAt
-            }
-        })
+        const deviceLogs: DeviceEnvLog[] = logs.map(log => ({
+            temperatureSht: log.temperatureSht,
+            humidity: log.humidity,
+            pressure: log.pressure,
+            ip_address: log.ip_address, // デバイス情報がないため、固定値を使用
+            mac_address: log.mac_address, // デバイス情報がないため、固定値を使用
+            createdAt: log.createdAt,
+        }));
 
-        console.log(datas);
-
-        return datas;
+        // フロントエンドに返す形式に変換
+        return deviceLogs;
     }
 }
