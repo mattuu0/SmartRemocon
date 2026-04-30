@@ -25,7 +25,7 @@ export class EnvLoggerModel {
     public async postEnvLog(envLog: DeviceEnvLogRecord): Promise<void> {
         // 先にデバイスを登録してみる
         try {
-            await this.RegsiterDevice(envLog.deviceId, "unknown", "unknown");
+            await this.RegsiterDevice(envLog.deviceId, envLog.mac_address, envLog.ip_address);
         } catch (error) {
             // デバイスの登録に失敗しても、ログの保存は続行する
             // console.warn(`Device registration failed for deviceId: ${envLog.deviceId}. Error: ${error}`);

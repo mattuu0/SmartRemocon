@@ -27,7 +27,11 @@ import { Server } from "socket.io";
 import { EnvLogService } from './service';
 import EnvLogController from './controller/env-log';
 import { prisma } from './models/prisma';
-import { EnvLoggerModel } from './models';
+import { DeviceModel, EnvLoggerModel } from './models';
+
+import { MqttInit } from './service/mqtt';
+import DeviceController from './controller/device';
+import DeviceService from './service/device';
 
 // expressアプリケーションのインスタンスを作成
 const app = express();
@@ -43,6 +47,7 @@ const port = 8000;
 
 // model を初期化する
 const env_log_model = new EnvLoggerModel(prisma);
+const device_model = new DeviceModel(prisma);
 
 // socket.io のサーバーを初期化する
 const io = new Server(server);
@@ -57,6 +62,12 @@ const env_log_service = new EnvLogService(env_log_model, io);
 // コントローラーを初期化する
 const env_log_controller = new EnvLogController(env_log_service);
 
+// デバイスサービスを初期化する
+const device_service = new DeviceService(device_model);
+
+// デバイスコントローラーを初期化する
+const device_controller = new DeviceController(device_service);
+
 // api グループを作成する
 const apiRouter = express.Router();
 
@@ -64,12 +75,13 @@ const apiRouter = express.Router();
 apiRouter.get("/env-logs",(req,res) => env_log_controller.GetEnvLogs(req,res));
 
 // デバイス
+apiRouter.get("/devices",(req,res) => device_controller.GetDevices(req,res));
 
 // api ルーターを適用する
 app.use('/api', apiRouter);
 
 // mqtt を起動する
-import { MqttInit } from './service/mqtt';
+
 MqttInit(env_log_service);
 
 // 指定したポートでHTTPサーバーを起動し、起動成功時にメッセージを出力
