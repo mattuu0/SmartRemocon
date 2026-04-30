@@ -1,1 +1,4 @@
 .DS_Store
+mosquitto/certs/
+nginx/keys/
+openssl/jwtKeys/

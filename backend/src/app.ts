@@ -18,7 +18,6 @@ import express from 'express';
 
 // httpモジュールをインポート（Node.jsの標準モジュール、HTTPサーバーを作成するために使用）
 import http from 'http';
-import { Any } from 'typeorm';
 
 // サービスをインポートする
 import { EnvLogService } from './service';
@@ -53,6 +52,10 @@ apiRouter.get("/env-logs",(req,res) => env_log_controller.GetEnvLogs(req,res));
 
 // api ルーターを適用する
 app.use('/api', apiRouter);
+
+// mqtt を起動する
+import { MqttInit } from './service/mqtt';
+MqttInit(env_log_service);
 
 // 指定したポートでHTTPサーバーを起動し、起動成功時にメッセージを出力
 server.listen(port, () => {
