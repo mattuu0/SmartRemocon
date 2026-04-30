@@ -21,6 +21,9 @@ export class EnvLogService {
 
     // 追加のログをプッシュする関数
     public PostEnvLog(data: EnvLog) {
+        // 日時取得
+        data.createdAt = new Date();
+
         // json に追加  
         this.EnvLoggerModel.postEnvLog(data);
     }
@@ -43,5 +46,4 @@ export class EnvLogService {
 
         return datas;
     }
-
 }

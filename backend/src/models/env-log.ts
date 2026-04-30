@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "../../generated/prisma/client";
 import { EnvLog } from "../service";
 
 export class EnvLoggerModel {
@@ -15,10 +15,10 @@ export class EnvLoggerModel {
         const environmentLog = await this.prisma.environmentLog.create({
             data: {
                 device_id: 1,
-                temperature_sht: 25.5,
-                humidity: 60.0,
-                temperature_qmp: 25.3,
-                pressure: 1013.25,
+                temperature_sht: envLog.temperatureSht,
+                humidity: envLog.humidity,
+                temperature_qmp: 10,
+                pressure: envLog.pressure,
             },
         });
 
@@ -30,7 +30,7 @@ export class EnvLoggerModel {
         // model からデータを取得
         const environmentLogs = await this.prisma.environmentLog.findMany();
 
-        const envLogs: EnvLog[] = environmentLogs.map((log) => ({
+        const envLogs: EnvLog[] = environmentLogs.map((log: any) => ({
             temperatureSht: log.temperature_sht,
             humidity: log.humidity,
             pressure: log.pressure,
