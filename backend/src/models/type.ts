@@ -7,3 +7,12 @@ export type DeviceEnvLogRecord = {
     pressure: number;       // 圧力
     createdAt: Date; // number → Date に変更
 };
+
+export type IrSensorValue = {
+    id: number;
+    deviceId: string;
+    name: string;
+    data: string;
+    createdAt: Date;
+    updatedAt: Date;    
+}

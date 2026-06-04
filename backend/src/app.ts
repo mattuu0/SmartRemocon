@@ -32,6 +32,9 @@ import { DeviceModel, EnvLoggerModel } from './models';
 import { MqttInit } from './service/mqtt';
 import DeviceController from './controller/device';
 import DeviceService from './service/device';
+import IrSensorService from './service/sensor';
+import IrSensorController from './controller/sensor';
+import IrSensorModel from './models/sensor';
 
 // expressアプリケーションのインスタンスを作成
 const app = express();
@@ -48,6 +51,7 @@ const port = 8000;
 // model を初期化する
 const env_log_model = new EnvLoggerModel(prisma);
 const device_model = new DeviceModel(prisma);
+const ir_sensor_model = new IrSensorModel(prisma);
 
 // socket.io のサーバーを初期化する
 const io = new Server(server);
@@ -68,6 +72,12 @@ const device_service = new DeviceService(device_model);
 // デバイスコントローラーを初期化する
 const device_controller = new DeviceController(device_service);
 
+// IRサービスを初期化する
+const ir_service = new IrSensorService(ir_sensor_model, io);
+
+// IRコントローラーを初期化する
+const ir_controller = new IrSensorController(ir_service);
+
 // api グループを作成する
 const apiRouter = express.Router();
 
@@ -77,12 +87,30 @@ apiRouter.get("/env-logs",(req,res) => env_log_controller.GetEnvLogs(req,res));
 // デバイス
 apiRouter.get("/devices",(req,res) => device_controller.GetDevices(req,res));
 
+// IRセンサー
+apiRouter.get("/sensor-list",(req,res) => ir_controller.GetIrSensors(req,res));
+
+// IRセンサーの新規作成
+apiRouter.post("/sensor-list",(req,res) => ir_controller.CreateIrSensor(req,res));
+
+// センサーの削除
+apiRouter.delete("/sensor/:id",(req,res) => ir_controller.DeleteIrSensor(req,res));
+
+// センサーの更新
+apiRouter.put("/sensor/:id",(req,res) => ir_controller.UpdateIrSensor(req,res));
+
+// 学習エンドポイント
+apiRouter.post("/esp/learn",(req,res) => ir_controller.LearnEnvLog(req,res));
+
+// センサー送信
+apiRouter.post("/esp/send",(req,res) => ir_controller.SendIrSensor(req,res));
+
 // api ルーターを適用する
 app.use('/api', apiRouter);
 
 // mqtt を起動する
 
-MqttInit(env_log_service);
+MqttInit(env_log_service, ir_service);
 
 // 指定したポートでHTTPサーバーを起動し、起動成功時にメッセージを出力
 server.listen(port, () => {

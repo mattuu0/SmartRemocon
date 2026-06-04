@@ -1,6 +1,7 @@
 import * as mqtt from "mqtt";
 import { EnvLogService } from "./env-log";
 import { DeviceEnvLog } from "./types";
+import IrSensorService from "./sensor";
 
 
 // 受信データの型定義
@@ -10,6 +11,7 @@ interface SensorData {
     temperature: number;
     humidity: number;
     pressure: number;
+    last_sensor_id: string;
 }
 
 // 接続設定
@@ -30,7 +32,10 @@ const options: mqtt.IClientOptions = {
     connectTimeout: 10000,
 };
 
-export function MqttInit(envlogService: EnvLogService) {
+// グローバルでクライアントを保持
+let GlobalClient: mqtt.MqttClient;
+
+export function MqttInit(envlogService: EnvLogService, ir_service: IrSensorService) {
     console.log(`Connecting to mqtt://${BROKER_HOST}:${BROKER_PORT} ...`);
 
     const client = mqtt.connect(options);
@@ -56,7 +61,7 @@ export function MqttInit(envlogService: EnvLogService) {
         });
     });
 
-    client.on("message", (topic: string, payload: Buffer) => {
+    client.on("message", async (topic: string, payload: Buffer) => {
         // topic が hello の時センサーとして処理する
         console.log(`[${new Date().toISOString()}] Received message on topic: ${topic}`);
 
@@ -92,12 +97,23 @@ export function MqttInit(envlogService: EnvLogService) {
         } else if (topic == "/ir") {
             const raw = payload.toString();
 
+            console.log(raw);
+
             // パースする
             const data = JSON.parse(raw);
 
             console.log(`[${new Date().toISOString()}] topic: ${topic}`);
             console.log(`  IR Data : ${data["payload"]}`);
+            console.log("  last_sensor_id : " + data["last_sensor_id"]);
             console.log("");
+
+            // 番号がない場合むし
+            if (data["last_sensor_id"] == "") {
+                return;
+            } 
+
+            // ir sensor を更新
+            await ir_service.UpdateFromIot(data["last_sensor_id"],"", data["payload"]);
         }
     });
 
@@ -112,4 +128,25 @@ export function MqttInit(envlogService: EnvLogService) {
     client.on("close", () => {
         console.log("Connection closed");
     });
+
+    // クライアントを保持
+    GlobalClient = client;
+}
+
+export function MqttClose() {
+    if (GlobalClient) {
+        GlobalClient.end();
+    }
+}
+
+// クライアントからメッセージを送信
+export function MqttSend(topic: string, message: string) {
+    if (GlobalClient) {
+        console.log(`Sending message: ${message} to topic: ${topic}`);
+        GlobalClient.publish(topic, message, { qos: 1, retain: false }, (err) => {
+            if (err) {
+                console.error("Publish error:", err);
+            }
+        });
+    }
 }

@@ -90,6 +90,8 @@ const Component: FC<Props> = ({ socket }) => {
 
 			const response = await instance.post("/sensor-list", newSensor);
 			setSensors((prev) => [...prev, response.data]);
+
+			console.log("センサー作成結果:", response.data);
 		} catch (error) {
 			console.error("センサー作成エラー:", error);
 		}
